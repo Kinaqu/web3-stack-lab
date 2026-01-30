@@ -1,17 +1,30 @@
-# Project Statement (Stage 1)
+# OP Stack Rollup Testnet (Portfolio)
 
 ## Statement
-Bring up a reproducible OP Stack L2 devnet on a single server.
-The devnet must expose an L2 JSON-RPC endpoint and support end-to-end transactions (deploy + call a contract).
+Build and operate a small OP Stack L2 rollup testnet on Sepolia.
+The goal is to run the core chain components (L1 contracts + L2 sequencer),
+then add an indexer, API, faucet, monitoring, and runbooks.
 
-## Requirements
-- Latency: RPC should be reliable for interactive dev workflows.
-- Cost: must run on a single machine (Docker-based), no paid external services required.
-- Trust: single-operator devnet; keys are dev-only (not production security).
+## Users
+- Developers who need a reproducible L2 sandbox for deployments and experiments.
+- Node/chain operators who want a minimal, production-style OP Stack setup.
+
+## MVP Goals (Day 2–3)
+- L2 RPC is up and responding.
+- A "hello tx" works end-to-end:
+  1) deposit ETH from L1 (Sepolia) to L2,
+  2) deploy a Counter contract on L2,
+  3) call increment(),
+  4) verify via RPC.
+
+## Constraints
+- Latency: RPC should be usable for dev (local calls feel instant).
+- Cost: minimize Sepolia ETH usage; no mainnet deployments.
+- Trust assumptions: single operator for sequencer/admin keys (for now).
 
 ## Threat Model (high level)
-- RPC exposed publicly → tx spam / DoS.
-- Leaked dev private keys → faucet drained / noisy chain state.
-- Chain reset/redeploy → tools must tolerate reinitialization.
-- Indexer desync (later) → API shows incorrect status.
-EOF
+- Key compromise (admin/sequencer/batcher/proposer keys).
+- RPC abuse / DoS (spam requests or transactions).
+- L1 reorgs impacting derivation/indexing correctness.
+- Misconfiguration (wrong chain IDs, wrong genesis/rollup config).
+- Supply-chain risk (malicious binaries/images).
