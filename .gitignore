@@ -1,0 +1,10 @@
+﻿.env
+*.env
+secrets/
+*.key
+node_modules/
+dist/
+build/
+__pycache__/
+.vscode/
+.idea/
