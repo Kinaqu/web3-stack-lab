@@ -1,0 +1,4 @@
+[submodule "infra/blockscout"]
+	path = infra/blockscout
+	url = https://github.com/blockscout/blockscout.git
+	branch = production-optimism
