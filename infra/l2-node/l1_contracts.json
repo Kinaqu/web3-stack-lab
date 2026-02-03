@@ -1,0 +1,17 @@
+{
+  "l1ChainID": 11155111,
+  "l2ChainID": "0x000000000000000000000000000000000000000000000000000000000001e240",
+  "startBlock": {
+    "hash": "0x67091884df895d0983a07f1fbdf0cd6417ab3f2684e69c7055f17ce8b418fa70",
+    "parentHash": "0x0986db5a389ab4336b59f079adff9b25e9fb64c61154b290db98e6124cf90ba1",
+    "number": "0x9b0230",
+    "timestamp": "0x697d4270"
+  },
+  "OptimismPortalProxy": "0x25a9f210b84c6f5c79e193071855546b56aa9382",
+  "SystemConfigProxy": "0x22614c9d060931a34e0f2160a6dc7c1b552ee139",
+  "L1StandardBridgeProxy": "0x32c8f2f04c909a614936d3e4251d3c4c508dee3c",
+  "L1CrossDomainMessengerProxy": "0x50899f77594344226808097b8e4d3e4f471cfb70",
+  "DisputeGameFactoryProxy": "0x9221f971e8a5e86e36f2b7350d85f9ebc17d77cc",
+  "AnchorStateRegistryProxy": "0xf0bb3413080e46b0c08323a75605cc1a5b25ce01",
+  "EthLockboxProxy": "0xc35f351cab5f0b63278d36fe15eef7f34216c123"
+}

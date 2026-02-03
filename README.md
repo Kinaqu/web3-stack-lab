@@ -2,30 +2,161 @@
 
 One repository = one system.
 
-**Stage 1 (current):** bring up a local OP Stack L2 devnet with production-like ops basics:
-- L2 node stack (execution + rollup node + roles)
-- RPC endpoint
-- Explorer (Blockscout) — next
-- Faucet — next
-- Indexer + Postgres — next
-- Monitoring (Prometheus/Grafana) — next
-- Docs + runbooks (this folder)
+## What it is
+I’m building an **OP Stack L2 network** with production-like ops basics: **public RPC, explorer, faucet, indexer + API, monitoring, and runbooks**.
 
-## Quickstart (coming next)
-The exact commands will live in `infra/l2-node/` once the docker-compose devnet is added.
+**Statement:** “I run an OP Stack-based L2 with a public RPC, explorer, and API, suitable for deploying contracts and testing applications.”
 
-Expected flow:
-1. Start the L2 devnet via Docker Compose (`infra/l2-node/`)
-2. Verify RPC responds (default: `http://localhost:8545`)
-3. Deploy `Counter` contract and send a “hello tx”
+## MVP boundaries
+- **Phase 1:** local devnet (Docker Compose) → then public testnet.
+- Not chasing decentralization at first. Goal: **production-like operations**.
 
-## Documentation
-- `docs/architecture.md` — statement, requirements, architecture diagram, data flow, secrets
-- `docs/threat-model.md` — trust assumptions, risks, mitigations
-- `docs/runbooks.md` — troubleshooting and recovery playbooks
+## Defaults
+- **L1:** Ethereum Sepolia
+- **L2:** OP Stack (`op-node`, `op-geth`, sequencer + (next) batcher/proposer)
 
-## Repository map
-- `infra/` — node/explorer/indexer/monitoring/terraform scaffolding
-- `contracts/` — demo contracts (Counter now; verifiers later)
-- `backend/` — API services (later)
-- `zk/`, `oracle/` — future stages (later)
+## Threat model (minimal)
+- Compromise of keys: sequencer / batcher / proposer / faucet
+- RPC outage / latency degradation
+- L1 reorg → impact on derivation & indexer correctness
+- DoS on public RPC
+
+## Architecture
+```mermaid
+flowchart LR
+  subgraph L1[ L1: Ethereum Sepolia ]
+    L1RPC[L1 RPC Provider]
+    BEACON[L1 Beacon API]
+  end
+
+  subgraph L2[ L2 OP Stack Chain ]
+    OPGETH[op-geth (execution)]
+    OPNODE[op-node (rollup node)]
+    SEQ[Sequencer]
+    BATCH[Batcher (next)]
+    PROP[Proposer (next)]
+  end
+
+  subgraph Public[ Public Interfaces ]
+    RPC[L2 RPC (HTTP/WSS)]
+    EXP[Explorer (Blockscout) (next)]
+    FAUCET[Faucet (next)]
+    API[Backend API (next)]
+  end
+
+  subgraph Data[ Data & Ops ]
+    DB[(Postgres) (next)]
+    IDX[Indexer (next)]
+    PROM[Prometheus (next)]
+    GRAF[Grafana (next)]
+    LOG[Loki/Logs (next)]
+  end
+
+  L1RPC --> OPNODE
+  BEACON --> OPNODE
+
+  OPNODE --> OPGETH
+  SEQ --> OPGETH
+
+  OPGETH --> RPC
+  RPC --> EXP
+  RPC --> IDX
+  IDX --> DB
+  DB --> API
+  RPC --> FAUCET
+
+  OPGETH --> PROM
+  OPNODE --> PROM
+  PROM --> GRAF
+  OPGETH --> LOG
+  OPNODE --> LOG
+
+Quickstart (local devnet)
+Runtime lives in infra/l2-node/.
+
+
+Prerequisites
+Docker + Docker Compose
+
+jq, openssl
+
+Foundry (forge, cast)
+
+
+1) Configure
+Create .env (do not commit it):
+cp infra/l2-node/.env.example infra/l2-node/.env
+# edit infra/l2-node/.env:
+# - L1_RPC_URL (Sepolia RPC)
+# - L1_BEACON_URL (Sepolia beacon)
+# - PRIVATE_KEY (sequencer signer key)
+# - P2P_ADVERTISE_IP (127.0.0.1 for local)
+
+
+Generate JWT for Engine API:
+openssl rand -hex 32 > infra/l2-node/jwt.txt
+chmod 600 infra/l2-node/jwt.txt
+
+
+Initialize op-geth (once):
+docker run --rm \
+  -v $(pwd)/infra/l2-node:/workspace \
+  -w /workspace \
+  us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101605.0 \
+  init --datadir=./op-geth-data --state.scheme=hash ./genesis.json
+
+
+2) Start
+cd infra/l2-node
+docker compose up -d
+docker compose ps
+
+
+3) Check health
+L2 RPC:
+cast block-number --rpc-url http://localhost:8545
+
+Sequencer admin:
+curl -s -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"admin_sequencerActive","params":[],"id":1}' \
+  http://localhost:8547
+
+
+4) Hello tx (deploy + increment + read)
+See contracts/README.md.
+
+
+Documentation
+docs/statement.md — statement + requirements
+
+docs/threat-model.md — trust assumptions, risks, mitigations
+
+docs/architecture.md — architecture diagram + data flow + secrets
+
+docs/runbooks.md — troubleshooting and recovery playbooks
+
+
+Repository map
+chain/ — OP Stack deployment outputs & configs (genesis.json, rollup.json, state.json)
+
+infra/ — docker-compose for node / explorer / monitoring
+
+infra/l2-node/ — local OP Stack node (op-geth + op-node)
+
+contracts/ — demo contracts (Counter now; verifiers later)
+
+services/ — faucet / indexer / api (next)
+
+backend/, frontend/, zk/, oracle/ — later stages
+
+
+Milestones  
+ Day 1: repo + scaffolding (Done)
+
+ Day 2–3: local OP Stack devnet + first L2 transactions (Done)
+
+ Day 4: Blockscout explorer + faucet (rate-limit + logs)
+
+ Day 5–6: indexer + Postgres + backend API
+
+ Day 7: monitoring + runbooks

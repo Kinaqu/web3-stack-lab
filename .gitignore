@@ -1,10 +1,16 @@
-﻿.env
-*.env
-secrets/
-*.key
-node_modules/
-dist/
-build/
-__pycache__/
-.vscode/
-.idea/
+﻿# secrets
+.env
+**/.env
+jwt.txt
+**/jwt.txt
+*.log
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# node data
+infra/l2-node/op-geth-data/
+**/op-geth-data/
+infra/l2-node/opnode_p2p_priv.txt
