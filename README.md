@@ -29,32 +29,32 @@ I’m building an **OP Stack L2 network** with production-like ops basics: **pub
 
 ```mermaid
 flowchart LR
-  subgraph L1[ L1: Ethereum Sepolia ]
-    L1RPC[L1 RPC Provider]
-    BEACON[L1 Beacon API]
+  subgraph L1["L1: Ethereum Sepolia"]
+    L1RPC["L1 RPC Provider"]
+    BEACON["L1 Beacon API"]
   end
 
-  subgraph L2[ L2 OP Stack Chain ]
-    OPGETH[op-geth (execution)]
-    OPNODE[op-node (rollup node)]
-    SEQ[Sequencer]
-    BATCH[Batcher (next)]
-    PROP[Proposer (next)]
+  subgraph L2["L2 OP Stack Chain"]
+    OPGETH["op-geth (execution)"]
+    OPNODE["op-node (rollup node)"]
+    SEQ["Sequencer"]
+    BATCH["Batcher (next)"]
+    PROP["Proposer (next)"]
   end
 
-  subgraph Public[ Public Interfaces ]
-    RPC[L2 RPC (HTTP/WSS)]
-    EXP[Explorer (Blockscout) (next)]
-    FAUCET[Faucet (next)]
-    API[Backend API (next)]
+  subgraph Public["Public Interfaces"]
+    RPC["L2 RPC (HTTP/WSS)"]
+    EXP["Explorer (Blockscout) (next)"]
+    FAUCET["Faucet (next)"]
+    API["Backend API (next)"]
   end
 
-  subgraph Data[ Data & Ops ]
-    DB[(Postgres) (next)]
-    IDX[Indexer (next)]
-    PROM[Prometheus (next)]
-    GRAF[Grafana (next)]
-    LOG[Loki/Logs (next)]
+  subgraph Data["Data & Ops"]
+    DB["(Postgres) (next)"]
+    IDX["Indexer (next)"]
+    PROM["Prometheus (next)"]
+    GRAF["Grafana (next)"]
+    LOG["Loki/Logs (next)"]
   end
 
   L1RPC --> OPNODE

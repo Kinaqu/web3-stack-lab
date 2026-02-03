@@ -31,30 +31,30 @@ Goal of Stage 1: it is **reproducible**, works end-to-end, and is **operable** (
 
 ```mermaid
 flowchart LR
-  subgraph Host[Local machine (Docker)]
-    subgraph L2[OP Stack L2]
-      OPNODE[op-node]
-      OPGETH[op-geth (execution)]
-      SEQ[Sequencer]
-      BATCH[Batcher]
-      PROP[Proposer]
+  subgraph Host["Local machine (Docker)"]
+    subgraph L2["OP Stack L2"]
+      OPNODE["op-node"]
+      OPGETH["op-geth (execution)"]
+      SEQ["Sequencer"]
+      BATCH["Batcher"]
+      PROP["Proposer"]
     end
 
-    subgraph Interfaces[Interfaces]
-      RPC[L2 RPC :8545]
-      EXP[Explorer (Blockscout)]
-      FAU[Faucet]
+    subgraph Interfaces["Interfaces"]
+      RPC["L2 RPC :8545"]
+      EXP["Explorer (Blockscout)"]
+      FAU["Faucet"]
     end
 
-    subgraph Data[Data services]
-      IDX[Indexer]
-      DB[(Postgres)]
+    subgraph Data["Data services"]
+      IDX["Indexer"]
+      DB["(Postgres)"]
     end
 
-    subgraph Obs[Observability]
-      PROM[Prometheus]
-      GRAF[Grafana]
-      LOG[Logs (Loki / stdout)]
+    subgraph Obs["Observability"]
+      PROM["Prometheus"]
+      GRAF["Grafana"]
+      LOG["Logs (Loki / stdout)"]
     end
   end
 
