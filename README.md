@@ -70,6 +70,7 @@ flowchart LR
   PROM --> GRAF
   OPGETH --> LOG
   OPNODE --> LOG
+```
 
 Quickstart (local devnet)
 Runtime lives in infra/l2-node/.

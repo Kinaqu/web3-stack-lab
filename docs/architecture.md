@@ -72,7 +72,7 @@ flowchart LR
   PROM --> GRAF
   OPGETH --> LOG
   OPNODE --> LOG
-
+```
 
 
 4) Data flow (how data moves)
