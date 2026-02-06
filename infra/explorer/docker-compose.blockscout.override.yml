@@ -1,0 +1,26 @@
+services:
+  backend:
+    environment:
+      DATABASE_URL: postgresql://blockscout:${BLOCKSCOUT_DB_PASSWORD}@database:5432/blockscout
+      ACCOUNT_DATABASE_URL: postgresql://blockscout:${BLOCKSCOUT_DB_PASSWORD}@database:5432/blockscout_account
+      OPTIMISM_DATABASE_URL: postgresql://blockscout:${BLOCKSCOUT_DB_PASSWORD}@database:5432/blockscout_optimism
+      ECTO_USE_SSL: "false"
+
+  frontend:
+    environment:
+      NEXT_PUBLIC_API_PROTOCOL: "http"
+      NEXT_PUBLIC_API_HOST: "${BLOCKSCOUT_HOST}"
+      NEXT_PUBLIC_APP_PROTOCOL: "http"
+      NEXT_PUBLIC_APP_HOST: "${BLOCKSCOUT_HOST}"
+      NEXT_PUBLIC_STATS_API_HOST: "http://${BLOCKSCOUT_HOST}:8080"
+      NEXT_PUBLIC_VISUALIZE_API_HOST: "http://${BLOCKSCOUT_HOST}:8081"
+      NEXT_PUBLIC_NETWORK_ID: "123456"
+      NEXT_PUBLIC_API_BASE_PATH: "/"
+      NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: "ws"
+      NEXT_PUBLIC_HOMEPAGE_CHARTS: '["daily_txs"]'
+      NEXT_PUBLIC_IS_TESTNET: "true"
+
+  stats:
+    environment:
+      STATS__SERVER__HTTP__CORS__ENABLED: "true"
+      STATS__SERVER__HTTP__CORS__ALLOWED_ORIGIN: "http://${BLOCKSCOUT_HOST}"

@@ -13,4 +13,19 @@ contracts/broadcast/
 # node data
 infra/l2-node/op-geth-data/
 **/op-geth-data/
+infra/l2-node/opnode_p2p_priv.txtservices/faucet/.env
+infra/explorer/blockscout.override.env
+
+# --- OP Stack local node data / secrets ---
+infra/l2-node/op-geth-data/
+infra/l2-node/opnode_discovery_db/
+infra/l2-node/opnode_peerstore_db/
+infra/l2-node/jwt.txt
 infra/l2-node/opnode_p2p_priv.txt
+
+# --- Node / TS ---
+**/node_modules/
+**/dist/
+**/.turbo/
+**/.next/
+**/*.tsbuildinfo

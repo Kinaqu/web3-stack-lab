@@ -1,0 +1,15 @@
+services:
+  faucet:
+    build: ../../services/faucet
+    env_file:
+      - ../../services/faucet/.env
+    ports:
+      - "3002:3002"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - faucet_logs:/var/log/faucet
+    restart: unless-stopped
+
+volumes:
+  faucet_logs:
