@@ -5,6 +5,10 @@ services:
       ACCOUNT_DATABASE_URL: postgresql://blockscout:${BLOCKSCOUT_DB_PASSWORD}@database:5432/blockscout_account
       OPTIMISM_DATABASE_URL: postgresql://blockscout:${BLOCKSCOUT_DB_PASSWORD}@database:5432/blockscout_optimism
       ECTO_USE_SSL: "false"
+      NFT_MEDIA_HANDLER_ENABLED: "false"
+      NFT_MEDIA_HANDLER_BACKFILL_ENABLED: "false"
+      NFT_MEDIA_HANDLER_REMOTE_DISPATCHER_NODE_MODE_ENABLED: "false"
+      NFT_MEDIA_HANDLER_IS_WORKER: "false"
 
   frontend:
     environment:

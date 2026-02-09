@@ -130,3 +130,13 @@
 14:05:20.506944 version@stat F·[2 1] S·1KiB[1KiB 474B] Sc·[0.50 0.00]
 14:05:20.511074 db@janitor F·5 G·0
 14:05:20.511081 db@open done T·6.236903ms
+=============== Feb 9, 2026 (UTC) ===============
+18:34:49.664836 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+18:34:49.664959 version@stat F·[2 1] S·1KiB[1KiB 474B] Sc·[0.50 0.00]
+18:34:49.664968 db@open opening
+18:34:49.664983 journal@recovery F·1
+18:34:49.665323 journal@recovery recovering @34
+18:34:49.666644 memdb@flush created L0@36 N·7 S·676B "/pe..3EI,v97":"/pe..pub,v92"
+18:34:49.668346 version@stat F·[3 1] S·2KiB[2KiB 474B] Sc·[0.75 0.00]
+18:34:49.674745 db@janitor F·6 G·0
+18:34:49.674757 db@open done T·9.786916ms

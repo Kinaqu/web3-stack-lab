@@ -1,0 +1,4 @@
+services:
+  user-ops-indexer:
+    deploy:
+      replicas: 0

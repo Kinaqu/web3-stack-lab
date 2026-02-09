@@ -1,31 +1,130 @@
-﻿# secrets
+﻿############################
+# Secrets / credentials
+############################
 .env
 **/.env
+.env.*
+!.env.example
+
 jwt.txt
 **/jwt.txt
+**/*secret*
+**/*secrets*
+**/*private*
+**/*privkey*
+**/*mnemonic*
+**/*keyfile*
+*.pem
+*.key
+*.crt
+*.p12
+*.keystore
+
+############################
+# Logs / temp
+############################
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+*.seed
+*.tmp
+tmp/
+temp/
+.cache/
+cache/
 
-# Foundry
-contracts/out/
-contracts/cache/
-contracts/broadcast/
+############################
+# OS / editor
+############################
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# node data
-infra/l2-node/op-geth-data/
-**/op-geth-data/
-infra/l2-node/opnode_p2p_priv.txtservices/faucet/.env
-infra/explorer/blockscout.override.env
-
-# --- OP Stack local node data / secrets ---
-infra/l2-node/op-geth-data/
-infra/l2-node/opnode_discovery_db/
-infra/l2-node/opnode_peerstore_db/
-infra/l2-node/jwt.txt
-infra/l2-node/opnode_p2p_priv.txt
-
-# --- Node / TS ---
+############################
+# Node / TypeScript
+############################
 **/node_modules/
 **/dist/
+**/build/
 **/.turbo/
 **/.next/
 **/*.tsbuildinfo
+**/coverage/
+**/.nyc_output/
+**/.eslintcache
+
+############################
+# Foundry / Solidity
+############################
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+**/out/
+**/cache/
+**/broadcast/
+
+############################
+# OP Stack / chain data / node state
+############################
+# op-geth / op-node data dirs (local devnet state)
+infra/l2-node/op-geth-data/
+infra/l2-node/opnode_discovery_db/
+infra/l2-node/opnode_peerstore_db/
+infra/l2-node/op-node-data/
+infra/l2-node/geth/
+infra/l2-node/node-data/
+**/op-geth-data/
+**/opnode_discovery_db/
+**/opnode_peerstore_db/
+**/op-node-data/
+**/geth/
+**/node-data/
+
+# OP Stack secrets / keys
+infra/l2-node/jwt.txt
+infra/l2-node/opnode_p2p_priv.txt
+infra/l2-node/opnode_p2p_priv.txt
+infra/l2-node/*.txt
+# (если у тебя есть конкретные ключи в других местах)
+**/opnode_p2p_priv.txt
+
+############################
+# Explorer (Blockscout) overrides
+############################
+infra/explorer/blockscout.override.env
+infra/explorer/blockscout.override.env.*
+!infra/explorer/blockscout.override.env.example
+
+# blockscout folder (если ты его генеришь/подключаешь отдельно)
+blockscout/
+**/blockscout/
+
+############################
+# Docker / compose volumes
+############################
+**/.docker/
+**/docker-data/
+**/volumes/
+**/*.local.yml
+
+############################
+# DB / runtime data
+############################
+**/*.sqlite
+**/*.db
+**/pg_data/
+**/postgres-data/
+**/data/
+services/**/logs/
+infra/**/logs/
+
+############################
+# Faucet specific (если нужно)
+############################
+services/faucet/.env
