@@ -163,6 +163,6 @@ See [contracts/README.md](contracts/README.md).
 
 - [x] Day 1: repo + scaffolding
 - [x] Day 2–3: local OP Stack devnet + first L2 transactions
-- [ ] Day 4: Blockscout explorer + faucet (rate-limit + logs)
+- [x] Day 4: Blockscout explorer + faucet (rate-limit + logs)
 - [ ] Day 5–6: indexer + Postgres + backend API
 - [ ] Day 7: monitoring + runbooks
