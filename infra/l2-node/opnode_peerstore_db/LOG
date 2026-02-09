@@ -120,3 +120,13 @@
 14:31:46.006804 db@janitor F·5 G·1
 14:31:46.006837 db@janitor removing table-26
 14:31:46.006943 db@open done T·16.999355ms
+=============== Feb 6, 2026 (UTC) ===============
+14:05:20.504564 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+14:05:20.504834 version@stat F·[1 1] S·1KiB[760B 474B] Sc·[0.25 0.00]
+14:05:20.504841 db@open opening
+14:05:20.504856 journal@recovery F·1
+14:05:20.505652 journal@recovery recovering @31
+14:05:20.506830 memdb@flush created L0@33 N·8 S·754B "/pe..3EI,v89":"/pe..pub,v83"
+14:05:20.506944 version@stat F·[2 1] S·1KiB[1KiB 474B] Sc·[0.50 0.00]
+14:05:20.511074 db@janitor F·5 G·0
+14:05:20.511081 db@open done T·6.236903ms
