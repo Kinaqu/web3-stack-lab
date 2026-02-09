@@ -2,10 +2,10 @@
 
 This compose stack runs the operational backend services for the L2 devnet:
 
-- Postgres (indexing storage)
-- Indexer (chain → DB pipeline)
-- API (read interface for indexed data)
-- Faucet (test ETH distribution)
+- **Postgres** (indexing storage)
+- **Indexer** (chain → DB pipeline)
+- **API** (read interface for indexed data)
+- **Faucet** (test ETH distribution)
 
 These services together simulate a production-like infra layer for a rollup.
 
@@ -16,63 +16,51 @@ These services together simulate a production-like infra layer for a rollup.
 ### Postgres
 Stores indexed chain data.
 
-Tables:
-- blocks
-- transactions
-- indexer_state
-- schema_migrations
+**Tables:**
+- `blocks`
+- `transactions`
+- `indexer_state`
+- `schema_migrations`
 
-Port:
-5432
-
+**Port:** `5432`
 
 ---
 
 ### Indexer
 Indexes L2 blocks and transactions from RPC into Postgres.
 
-Responsibilities:
-- read blocks from L2 RPC
-- store blocks + transactions
-- maintain checkpoint
-- handle short reorgs
-- fetch receipts → status
+**Responsibilities:**
+- Read blocks from L2 RPC
+- Store blocks + transactions
+- Maintain checkpoint
+- Handle short reorgs
+- Fetch receipts → status
 
-Env:
-DATABASE_URL
-L2_RPC_URL
-CONFIRMATIONS
-REORG_SAFETY
-POLL_INTERVAL_MS
-
-
+**Env:**
+- `DATABASE_URL`
+- `L2_RPC_URL`
+- `CONFIRMATIONS`
+- `REORG_SAFETY`
+- `POLL_INTERVAL_MS`
 
 ---
 
 ### API
 HTTP interface over indexed data.
 
-Endpoints:
-GET /health
-GET /stats
-GET /tx/:hash
+**Endpoints:**
+- `GET /health`
+- `GET /stats`
+- `GET /tx/:hash`
 
-
-
-Port:
-3001
-
-
+**Port:** `3001`
 
 ---
 
 ### Faucet
 Simple test ETH distribution service.
 
-Port:
-3002
-
-
+**Port:** `3002`
 
 ---
 
@@ -80,29 +68,29 @@ Port:
 
 From this directory:
 
+```bash
 docker compose up -d --build
-
+```
 
 Check logs:
 
+```bash
 docker compose logs -f
-
-
+```
 
 ---
 
 ## Health Checks
 
-API:
+**API:**
+```bash
 curl http://localhost:3001/health
+```
 
-
-
-Stats:
+**Stats:**
+```bash
 curl http://localhost:3001/stats
-
-
-
+```
 
 ---
 
@@ -112,26 +100,25 @@ curl http://localhost:3001/stats
 Check:
 - L2 RPC reachable from container
 - Postgres healthy
-- confirmations not too large
+- Confirmations not too large
 
+```bash
 docker compose logs indexer
-
-
-
----
+```
 
 ### RPC not reachable
 If using host RPC, ensure:
 
+```yaml
 extra_hosts:
-
-"host.docker.internal:host-gateway"
-
+  - "host.docker.internal:host-gateway"
+```
 
 is configured.
 
----
-
 ### Reset database
+
+```bash
 docker compose down -v
 docker compose up -d --build
+```

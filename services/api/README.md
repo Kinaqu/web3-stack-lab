@@ -1,7 +1,6 @@
 # API Service
 
 HTTP interface over indexed L2 data.
-
 The API reads from Postgres and L2 RPC.
 
 ---
@@ -9,28 +8,32 @@ The API reads from Postgres and L2 RPC.
 ## Endpoints
 
 ### Health
+
+```
 GET /health
+```
 
-
-
-Checks:
-- database connection
+**Checks:**
+- Database connection
 - RPC connection
 
 ---
 
 ### Stats
+
+```
 GET /stats
+```
 
+**Returns:**
+- `rpcHead`
+- `indexedHead`
+- `lag`
+- `confirmations`
+- `db` counts
 
-Returns:
-- rpcHead
-- indexedHead
-- lag
-- confirmations
-- DB counts
+**Example:**
 
-Example:
 ```json
 {
   "rpcHead": 1500,
@@ -42,57 +45,52 @@ Example:
     "transactions": 7123
   }
 }
+```
 
+---
 
+### Transaction
 
-Transaction
+```
 GET /tx/:hash
-
+```
 
 Returns indexed transaction.
 
-Fields:
+**Fields:**
+- `hash`
+- `blockNumber`
+- `from`
+- `to`
+- `nonce`
+- `value`
+- `gas`
+- `gasPrice`
+- `status`
 
-hash
+---
 
-blockNumber
+## Environment Variables
 
-from
+- `DATABASE_URL`
+- `L2_RPC_URL`
+- `PORT`
+- `LOG_LEVEL`
 
-to
+---
 
-nonce
-
-value
-
-gas
-
-gasPrice
-
-status
-
-
-Environment Variables
-DATABASE_URL
-L2_RPC_URL
-PORT
-LOG_LEVEL
-
-
-Architecture Role
+## Architecture Role
 
 The API is read-only.
 
-
-Postgres → API → Clients
-
-
+`Postgres` → `API` → `Clients`
 
 No writes happen here.
 
+---
 
-Running
+## Running
 
+```bash
 docker compose up api
-
-
+```

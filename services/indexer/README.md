@@ -1,7 +1,6 @@
 # Indexer Service
 
 Indexes L2 blockchain data into Postgres.
-
 This service converts RPC chain data into queryable relational storage.
 
 ---
@@ -10,7 +9,7 @@ This service converts RPC chain data into queryable relational storage.
 
 - Read L2 blocks via JSON-RPC
 - Store blocks and transactions
-- Maintain checkpoint (indexer_state)
+- Maintain checkpoint (`indexer_state`)
 - Handle short reorgs
 - Fetch receipts → transaction status
 - Apply DB migrations on startup
@@ -19,26 +18,24 @@ This service converts RPC chain data into queryable relational storage.
 
 ## Architecture Role
 
-Pipeline:
+**Pipeline:**
 
-L2 RPC → Indexer → Postgres → API
+`L2 RPC` → `Indexer` → `Postgres` → `API`
 
-
-The indexer is the only writer to the database.
+The indexer is the **only writer** to the database.
 
 ---
 
 ## Environment Variables
 
-DATABASE_URL=postgres://web3:web3pass@postgres:5432/web3stack
-L2_RPC_URL=http://host.docker.internal:8545
-
-CONFIRMATIONS=5
-REORG_SAFETY=20
-POLL_INTERVAL_MS=2000
-LOG_LEVEL=info
-
-
+| Variable | Default / Example | Description |
+|---|---|---|
+| `DATABASE_URL` | `postgres://web3:web3pass@postgres:5432/web3stack` | Connection string |
+| `L2_RPC_URL` | `http://host.docker.internal:8545` | L2 RPC Endpoint |
+| `CONFIRMATIONS` | `5` | Block depth for safety |
+| `REORG_SAFETY` | `20` | Reorg checks depth |
+| `POLL_INTERVAL_MS` | `2000` | Polling frequency |
+| `LOG_LEVEL` | `info` | Logging verbosity |
 
 ---
 
@@ -46,15 +43,14 @@ LOG_LEVEL=info
 
 SQL migrations are stored in:
 
+```
 migrations/
+```
 
 Applied automatically on startup.
 
-Migration tracking table:
-
-
-schema_migrations
-
+**Migration tracking table:**
+`schema_migrations`
 
 ---
 
@@ -62,27 +58,22 @@ schema_migrations
 
 Indexer verifies the hash of the last indexed block.
 
-If mismatch detected:
-- rollback last N blocks
-- reset checkpoint
-- resume indexing
+**If mismatch detected:**
+1. Rollback last N blocks
+2. Reset checkpoint
+3. Resume indexing
 
-Config:
-REORG_SAFETY
-
+**Config:** `REORG_SAFETY`
 
 ---
 
 ## Checkpointing
 
-State table:
+**State table:** `indexer_state`
 
-indexer_state
-
-
-Fields:
-- indexed_block
-- indexed_block_hash
+**Fields:**
+- `indexed_block`
+- `indexed_block_hash`
 
 Indexer resumes from checkpoint on restart.
 
@@ -90,12 +81,11 @@ Indexer resumes from checkpoint on restart.
 
 ## Running Locally
 
-From infra/services:
+From `infra/services`:
 
-
-
+```bash
 docker compose up indexer
-
+```
 
 ---
 
@@ -103,9 +93,9 @@ docker compose up indexer
 
 Example indexing log:
 
+```text
 indexing head=158900 target=158895 start=120
-
-
+```
 
 ---
 
@@ -116,18 +106,8 @@ Indexer retries automatically.
 
 ### Receipt fetch fails
 Transaction stored with:
-status = null
-
-
+`status = null`
 
 ### Restart
 Indexer resumes from checkpoint.
 
----
-
-## Future Improvements
-
-- batch inserts
-- receipt concurrency pool
-- metrics export
-- queue-based indexing

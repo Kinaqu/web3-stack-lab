@@ -1,1 +1,0 @@
-in blockscout setted up some env files and geth.yml
