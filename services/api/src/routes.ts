@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db.js";
 import { provider } from "./rpc.js";
-
+import { dbUp, l2RpcHead, l2RpcUp } from "./metrics.js";
 
 function isHexTxHash(s: string): boolean {
   return /^0x[a-fA-F0-9]{64}$/.test(s);
@@ -11,19 +11,25 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   app.get("/health", async () => {
     const out: any = { ok: true, db: { ok: true }, rpc: { ok: true } };
 
+    // DB health
     try {
       await pool.query("SELECT 1");
+      dbUp.set({ service: "api" }, 1);
     } catch (e: any) {
       out.ok = false;
       out.db = { ok: false, error: e?.message ?? String(e) };
+      dbUp.set({ service: "api" }, 0);
     }
 
+    // RPC health
     try {
       const chainId = await provider.send("eth_chainId", []);
       out.rpc = { ok: true, chainId };
+      l2RpcUp.set({ service: "api" }, 1);
     } catch (e: any) {
       out.ok = false;
       out.rpc = { ok: false, error: e?.message ?? String(e) };
+      l2RpcUp.set({ service: "api" }, 0);
     }
 
     return out;
@@ -64,6 +70,10 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   app.get("/stats", async () => {
     // RPC head
     const rpcHead = await provider.getBlockNumber();
+
+    // Update RPC gauges for dashboards/alerts
+    l2RpcHead.set({ service: "api" }, rpcHead);
+    l2RpcUp.set({ service: "api" }, 1);
 
     // DB indexed head
     const s = await pool.query(`SELECT indexed_block FROM indexer_state WHERE id = 1`);

@@ -85,6 +85,11 @@ infra/l2-node/node-data/
 **/op-node-data/
 **/geth/
 **/node-data/
+# --- OP Stack local node state (never commit) ---
+infra/l2-node/op-geth-data/
+infra/l2-node/opnode_discovery_db/
+infra/l2-node/opnode_peerstore_db/
+
 
 # OP Stack secrets / keys
 infra/l2-node/jwt.txt

@@ -1,0 +1,89 @@
+groups:
+  - name: l2-health
+    rules:
+      # --- Core availability ---
+      - alert: APIDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API is down"
+          description: "Prometheus cannot scrape API metrics (up==0) for 1m."
+
+      - alert: IndexerDown
+        expr: up{job="indexer"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Indexer is down"
+          description: "Prometheus cannot scrape Indexer metrics (up==0) for 1m."
+
+      - alert: PostgresExporterDown
+        expr: up{job="postgres"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Postgres exporter is down"
+          description: "Prometheus cannot scrape postgres-exporter for 2m."
+
+      - alert: NodeExporterDown
+        expr: up{job="node"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Node exporter is down"
+          description: "Prometheus cannot scrape node-exporter for 2m."
+
+      # --- RPC health (custom metric from API or Indexer) ---
+      # We'll implement:
+      #   l2_rpc_up{service="api"} 0/1
+      #   l2_rpc_head{service="api"} current RPC head
+      - alert: L2RPCDown
+        expr: (l2_rpc_up == 0) OR absent(l2_rpc_up)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "L2 RPC is down or metrics missing"
+          description: "l2_rpc_up==0 for 1m OR metric is absent (metrics endpoint not exposing it)."
+
+      # --- Indexer lag (custom metric from indexer) ---
+      # We'll implement:
+      #   indexer_indexed_head
+      #   indexer_rpc_head
+      #   indexer_lag_blocks
+      - alert: IndexerLagHigh
+        expr: indexer_lag_blocks > 200
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Indexer lag is high"
+          description: "Indexer lag > 200 blocks for 5m (indexer_lag_blocks)."
+
+      - alert: IndexerNotProgressing
+        expr: changes(indexer_indexed_head[10m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Indexer not progressing"
+          description: "No change in indexed head for 10m (may be stuck, RPC errors, DB errors)."
+
+      # --- Disk free on root mount (node-exporter) ---
+      - alert: DiskFreeLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"} /
+            node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}
+          ) < 0.10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk free < 10% on /"
+          description: "Root filesystem has <10% free space for 10m."

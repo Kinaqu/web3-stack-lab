@@ -1,0 +1,72 @@
+{
+  "uid": "l2-health",
+  "title": "L2 Health",
+  "tags": ["l2", "infra", "monitoring"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "RPC Head (l2_rpc_head)",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "l2_rpc_head",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Indexer Indexed Head (indexer_indexed_head)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "indexer_indexed_head",
+          "legendFormat": "indexed"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Indexer Lag (blocks) (indexer_lag_blocks)",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "indexer_lag_blocks",
+          "legendFormat": "lag"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Disk Free % (/)",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(node_filesystem_avail_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay|squashfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay|squashfs\"}) * 100",
+          "legendFormat": "free %"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "API & Indexer Up",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+      "targets": [
+        { "refId": "A", "expr": "up{job=\"api\"}", "legendFormat": "api" },
+        { "refId": "B", "expr": "up{job=\"indexer\"}", "legendFormat": "indexer" },
+        { "refId": "C", "expr": "up{job=\"postgres\"}", "legendFormat": "postgres-exporter" },
+        { "refId": "D", "expr": "up{job=\"node\"}", "legendFormat": "node-exporter" }
+      ]
+    }
+  ],
+  "templating": { "list": [] },
+  "annotations": { "list": [] }
+}

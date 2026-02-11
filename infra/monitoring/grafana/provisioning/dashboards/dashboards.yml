@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "L2"
+    orgId: 1
+    folder: "L2"
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

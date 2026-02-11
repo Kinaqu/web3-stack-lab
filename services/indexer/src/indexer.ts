@@ -3,6 +3,13 @@ import { config } from "./config.js";
 import { logger } from "./logger.js";
 import { withClient } from "./db.js";
 import { getState, rollbackFrom, setState } from "./reorg.js";
+import {
+  indexerIndexedHead,
+  indexerRpcHead,
+  indexerLagBlocks,
+  l2RpcUp,
+  l2RpcHead,
+} from "./metrics.js";
 
 type RpcBlockWithTxs = any;
 
@@ -21,7 +28,12 @@ async function getBlockHash(n: bigint): Promise<string> {
 function asTxHash(t: any): string | null {
   if (!t) return null;
   if (typeof t === "string" && t.startsWith("0x") && t.length === 66) return t;
-  if (typeof t === "object" && typeof t.hash === "string" && t.hash.startsWith("0x") && t.hash.length === 66)
+  if (
+    typeof t === "object" &&
+    typeof t.hash === "string" &&
+    t.hash.startsWith("0x") &&
+    t.hash.length === 66
+  )
     return t.hash;
   return null;
 }
@@ -37,6 +49,15 @@ function toBigintString(v: any, fallback: string): string {
   } catch {
     return fallback;
   }
+}
+
+function clampToSafeNumber(n: bigint): number {
+  // Prometheus client expects JS number; clamp bigints safely
+  const max = BigInt(Number.MAX_SAFE_INTEGER);
+  const min = BigInt(Number.MIN_SAFE_INTEGER);
+  if (n > max) return Number.MAX_SAFE_INTEGER;
+  if (n < min) return Number.MIN_SAFE_INTEGER;
+  return Number(n);
 }
 
 async function upsertBlockAndTxs(block: RpcBlockWithTxs): Promise<void> {
@@ -68,7 +89,6 @@ async function upsertBlockAndTxs(block: RpcBlockWithTxs): Promise<void> {
       );
 
       for (const hash of txHashes) {
-        // Get full tx (some nodes may not return full objects inside getBlock(..., true))
         const tx = await provider.getTransaction(hash);
         if (!tx) {
           logger.warn({ hash }, "tx not found via getTransaction; skipping");
@@ -167,12 +187,24 @@ export async function runIndexerForever(): Promise<void> {
 
   while (true) {
     try {
+      // Reorg protection
       await reorgCheckAndMaybeRollback();
 
+      // Heads
       const head = await getHead();
       const target = head - BigInt(config.confirmations);
+
+      // update RPC metrics
+      l2RpcUp.set({ service: "indexer" }, 1);
+      l2RpcHead.set({ service: "indexer" }, clampToSafeNumber(head));
+      indexerRpcHead.set(clampToSafeNumber(head));
+
       const state = await getState();
       const start = state.indexedBlock + 1n;
+
+      // update indexed metrics
+      indexerIndexedHead.set(clampToSafeNumber(state.indexedBlock));
+      indexerLagBlocks.set(clampToSafeNumber(head - state.indexedBlock));
 
       if (target < 0n || start > target) {
         await sleep(config.pollIntervalMs);
@@ -185,6 +217,7 @@ export async function runIndexerForever(): Promise<void> {
           target: target.toString(),
           start: start.toString(),
           confirmations: config.confirmations,
+          lag: (head - state.indexedBlock).toString(),
         },
         "indexing"
       );
@@ -196,8 +229,25 @@ export async function runIndexerForever(): Promise<void> {
 
         await upsertBlockAndTxs(block);
         await setState(BigInt(block.number), block.hash);
+
+        // update metrics as we go
+        indexerIndexedHead.set(block.number);
+        indexerLagBlocks.set(clampToSafeNumber(head - BigInt(block.number)));
       }
     } catch (e: any) {
+      // If the error is RPC-related, mark RPC down for alerts
+      const msg = String(e?.message ?? e);
+      if (
+        msg.includes("ENOTFOUND") ||
+        msg.includes("ECONNREFUSED") ||
+        msg.includes("failed to detect network") ||
+        msg.includes("timeout") ||
+        msg.includes("NETWORK_ERROR") ||
+        msg.includes("SERVER_ERROR")
+      ) {
+        l2RpcUp.set({ service: "indexer" }, 0);
+      }
+
       logger.error({ err: e?.message ?? e }, "indexer loop error");
       await sleep(Math.min(10_000, config.pollIntervalMs * 2));
     }

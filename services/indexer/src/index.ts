@@ -2,10 +2,12 @@ import { runMigrations } from "./migrate.js";
 import { runIndexerForever } from "./indexer.js";
 import { logger } from "./logger.js";
 import { pool } from "./db.js";
+import { startMetricsServer } from "./metrics.js";
 
 
 async function main(): Promise<void> {
   await runMigrations();
+  startMetricsServer(9102);
   await runIndexerForever();
 }
 

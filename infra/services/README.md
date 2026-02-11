@@ -2,65 +2,92 @@
 
 This compose stack runs the operational backend services for the L2 devnet:
 
-- **Postgres** (indexing storage)
-- **Indexer** (chain → DB pipeline)
-- **API** (read interface for indexed data)
-- **Faucet** (test ETH distribution)
+- Postgres (indexing storage)
+- Indexer (chain → DB pipeline)
+- API (read interface for indexed data)
+- Faucet (test ETH distribution)
 
-These services together simulate a production-like infra layer for a rollup.
+Prometheus (metrics collection)
 
----
+Grafana (dashboards)
 
-## Services
+node-exporter (host metrics)
 
-### Postgres
-Stores indexed chain data.
+postgres-exporter (DB metrics)
 
-**Tables:**
-- `blocks`
-- `transactions`
-- `indexer_state`
-- `schema_migrations`
+Together these services simulate a production-like rollup infra environment.
 
-**Port:** `5432`
+Architecture role
 
----
+This stack provides:
 
-### Indexer
-Indexes L2 blocks and transactions from RPC into Postgres.
+indexed chain state
 
-**Responsibilities:**
-- Read blocks from L2 RPC
-- Store blocks + transactions
-- Maintain checkpoint
-- Handle short reorgs
-- Fetch receipts → status
+RPC-independent read layer
 
-**Env:**
-- `DATABASE_URL`
-- `L2_RPC_URL`
-- `CONFIRMATIONS`
-- `REORG_SAFETY`
-- `POLL_INTERVAL_MS`
+observability
 
----
+operational recovery surface
 
-### API
-HTTP interface over indexed data.
+The OP Stack node itself runs separately in:
+infra/l2-node
 
-**Endpoints:**
-- `GET /health`
-- `GET /stats`
-- `GET /tx/:hash`
 
-**Port:** `3001`
+Services
+Postgres
 
----
+Persistent storage for indexed chain data.
 
-### Faucet
-Simple test ETH distribution service.
+Tables:
+- blocks
+- transactions
+- indexer_state
+- schema_migrations
 
-**Port:** `3002`
+Port:
+5432
+
+
+Indexer
+
+Indexes L2 blocks and transactions into Postgres.
+
+Responsibilities:
+- read blocks from L2 RPC
+- store blocks + transactions
+- maintain checkpoint
+- handle short reorgs
+- fetch receipts → status
+
+Env:
+DATABASE_URL
+L2_RPC_URL
+CONFIRMATIONS
+REORG_SAFETY
+POLL_INTERVAL_MS
+
+
+
+HTTP interface for indexed chain data.
+
+Endpoints:
+GET /health
+GET /stats
+GET /tx/:hash
+
+
+
+Port:
+3001
+
+
+
+Test ETH distribution service.
+
+Port:
+3002
+
+
 
 ---
 
@@ -68,29 +95,28 @@ Simple test ETH distribution service.
 
 From this directory:
 
-```bash
 docker compose up -d --build
 ```
 
 Check logs:
 
-```bash
 docker compose logs -f
-```
+
+
 
 ---
 
 ## Health Checks
 
-**API:**
-```bash
+API:
 curl http://localhost:3001/health
-```
 
 **Stats:**
 ```bash
 curl http://localhost:3001/stats
-```
+
+
+
 
 ---
 
@@ -100,25 +126,26 @@ curl http://localhost:3001/stats
 Check:
 - L2 RPC reachable from container
 - Postgres healthy
-- Confirmations not too large
+- confirmations not too large
 
-```bash
 docker compose logs indexer
-```
+
+
+
+---
 
 ### RPC not reachable
 If using host RPC, ensure:
 
-```yaml
 extra_hosts:
-  - "host.docker.internal:host-gateway"
-```
+
+"host.docker.internal:host-gateway"
+
 
 is configured.
 
-### Reset database
+---
 
-```bash
+### Reset database
 docker compose down -v
 docker compose up -d --build
-```
