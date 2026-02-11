@@ -1,4 +1,4 @@
-# Runbook: Indexer lagging
+# Runbook: Indexer Lagging
 
 ## Symptoms
 - Grafana: `indexer_lag_blocks` stays high or keeps increasing
@@ -10,146 +10,121 @@
 
 ## What to check (fast)
 
-### 1) Is the indexer progressing?
+### 1. Is the indexer progressing?
 Compare `indexedHead` over time:
 
 ```bash
 curl -s http://localhost:3001/stats | jq '.indexedHead, .rpcHead, .lag'
 sleep 10
 curl -s http://localhost:3001/stats | jq '.indexedHead, .rpcHead, .lag'
+```
 
-Expected:
+**Expected:**
+- `indexedHead` increases
+- `lag` decreases or stays bounded
 
-indexedHead increases
+### 2. Check indexer logs
 
-lag decreases or stays bounded
-
-2) Check indexer logs
-
+```bash
 cd infra/services
 docker compose logs -n 120 indexer
+```
 
+**Look for:**
+- RPC errors (timeouts, connection refused)
+- DB errors (deadlocks, connection errors)
+- Repeated errors on the same block number
 
-Look for:
-
-RPC errors (timeouts, connection refused)
-
-DB errors (deadlocks, connection errors)
-
-repeated errors on the same block number
-
-3) Check API health (DB/RPC)
+### 3. Check API health (DB/RPC)
+```bash
 curl -s http://localhost:3001/health | jq .
+```
 
+**Expected:**
+- `db.ok=true`
+- `rpc.ok=true`
 
-Expected:
+## DB checks
 
-db.ok=true
-
-rpc.ok=true
-
-DB checks
-Check checkpoint state
-
+### Check checkpoint state
+```bash
 cd infra/services
 docker compose exec postgres psql -U web3 -d web3stack -c "SELECT * FROM indexer_state;"
+```
 
-
-Check DB growth
+### Check DB growth
+```bash
 docker compose exec postgres psql -U web3 -d web3stack -c "SELECT COUNT(*) AS blocks FROM blocks;"
 docker compose exec postgres psql -U web3 -d web3stack -c "SELECT COUNT(*) AS txs FROM transactions;"
+```
 
+## Fast recovery
 
-
-Fast recovery
-Restart indexer
+### Restart indexer
+```bash
 cd infra/services
 docker compose restart indexer
 docker compose logs -n 80 indexer
+```
 
-If RPC is unhealthy, restart L2 node stack
-
+### If RPC is unhealthy
+Restart L2 node stack:
+```bash
 cd infra/l2-node
 docker compose restart
-Common root causes
-RPC unreachable / slow
+```
 
-Symptoms:
+## Common root causes
 
-l2_rpc_up=0 (if metrics enabled)
+### RPC unreachable / slow
+**Symptoms:**
+- `l2_rpc_up=0` (if metrics enabled)
+- Indexer logs show `ENOTFOUND`, timeouts, failed to detect network
 
-indexer logs show ENOTFOUND, timeouts, failed to detect network
+**Fix:**
+- Verify `RPC URL` in env
+- Ensure `extra_hosts: host.docker.internal:host-gateway` when using host RPC
+- Check L2 node is running and responsive
 
-Fix:
+### DB bottleneck
+**Symptoms:**
+- Indexer logs show DB timeouts
+- Postgres connections saturated
 
-verify RPC URL in env
+**Fix:**
+- Increase Postgres resources (CPU/RAM/disk IOPS)
+- Reduce indexing concurrency (if enabled)
+- Tune pool size in indexer
 
-ensure extra_hosts: host.docker.internal:host-gateway when using host RPC
+### Indexer stuck on a bad block / receipt fetch issues
+**Symptoms:**
+- Repeating errors on the same block
+- Receipt fetch failing repeatedly
 
-check L2 node is running and responsive
+**Fix:**
+- Restart indexer
+- Inspect failing block/tx hash in logs
+- If needed, rollback a few blocks (reorg handler) or manually adjust checkpoint (devnet only)
 
-DB bottleneck
+### Confirmations too high for devnet
+**Symptoms:**
+- Indexer always behind even though it’s “healthy”
 
-Symptoms:
+**Fix:**
+- Reduce `CONFIRMATIONS` (e.g. 1–5 for devnet)
 
-indexer logs show DB timeouts
+## Prevention
 
-Postgres connections saturated
+### Alert on
+- `IndexerNotProgressing` (no change in `indexer_indexed_head` for 10m)
+- `IndexerLagHigh` (lag > 200 blocks for 5m)
 
-Fix:
+### Keep a dashboard panel for
+- `indexer_indexed_head`
+- `indexer_lag_blocks`
+- `l2_rpc_head`
 
-increase Postgres resources (CPU/RAM/disk IOPS)
-
-reduce indexing concurrency (if enabled)
-
-tune pool size in indexer
-
-Indexer stuck on a bad block / receipt fetch issues
-
-Symptoms:
-
-repeating errors on the same block
-
-receipt fetch failing repeatedly
-
-Fix:
-
-restart indexer
-
-inspect failing block/tx hash in logs
-
-if needed, rollback a few blocks (reorg handler) or manually adjust checkpoint (devnet only)
-
-Confirmations too high for devnet
-
-Symptoms:
-
-indexer always behind even though it’s “healthy”
-
-Fix:
-
-reduce CONFIRMATIONS (e.g. 1–5 for devnet)
-
-Prevention
-
-Alert on:
-
-IndexerNotProgressing (no change in indexer_indexed_head for 10m)
-
-IndexerLagHigh (lag > 200 blocks for 5m)
-
-Keep a dashboard panel for:
-
-indexer_indexed_head
-
-indexer_lag_blocks
-
-l2_rpc_head
-
-Add resource monitoring:
-
-disk free %
-
-CPU/memory
-
-Postgres exporter metrics
+### Add resource monitoring
+- Disk free %
+- CPU/memory
+- Postgres exporter metrics

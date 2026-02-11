@@ -1,11 +1,11 @@
-# Runbook: L1 RPC rate-limited
+# Runbook: L1 RPC Rate Limited
 
 ## Symptoms
-- op-node/batcher/proposer logs show 429 / rate limit / timeout
+- `op-node`/`batcher`/`proposer` logs show 429 / rate limit / timeout
 - L2 stalls or delays
 
 ## What to check
-- op-node logs
+- `op-node` logs
 - L1 RPC provider quota
 
 ## Fast recovery

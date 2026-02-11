@@ -1,4 +1,4 @@
-# Runbook: Disk full
+# Runbook: Disk Full
 
 ## Symptoms
 - Containers crash / restart loop
@@ -6,31 +6,30 @@
 - Node exporter shows low disk free
 
 ## What to check
+
+Check disk usage:
 ```bash
 df -h
 docker system df
+```
 
+## Fast recovery
 
-Fast recovery
-
-Remove unused docker artifacts:
+### Remove unused docker artifacts
+```bash
 docker system prune -a
+```
 
-
-Remove old volumes if safe:
+### Remove old volumes if safe
+```bash
 docker volume ls
+```
 
+## Deeper fixes
+- Move chain data to a dedicated disk
+- Set log rotation
+- Set retention for metrics/logs
 
-Deeper fixes
-
-Move chain data to a dedicated disk
-
-Set log rotation
-
-Set retention for metrics/logs
-
-Prevention
-
-Alert: DiskFreeLow
-
-Periodic cleanup
+## Prevention
+- Alert: `DiskFreeLow`
+- Periodic cleanup
