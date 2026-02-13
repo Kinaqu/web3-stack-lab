@@ -1,47 +1,52 @@
-# Proof API
+# 🚀 Proof API
 
-The Proof API is an HTTP service responsible for accepting proof generation
-requests and managing the lifecycle of proof jobs.
+The **Proof API** is an HTTP service responsible for accepting proof generation requests and managing the lifecycle of proof jobs.
 
-It does NOT generate proofs itself. Instead, it:
+> [!IMPORTANT]
+> It does NOT generate proofs itself.
 
-- validates requests
-- persists jobs in Postgres
-- enqueues proving tasks in Redis
-- exposes job status endpoints
-- exposes Prometheus metrics
+Instead, it:
+- ✅ validates requests
+- ✅ persists jobs in **Postgres**
+- ✅ enqueues proving tasks in **Redis**
+- ✅ exposes job status endpoints
+- ✅ exposes **Prometheus metrics**
 
-The prover-worker consumes jobs from the queue.
+The **prover-worker** consumes jobs from the queue.
 
 ---
 
-## Architecture Role
+## 🏗️ Architecture Role
 
 Proof API is the entry point of the ZK proving pipeline:
 
-Client → Proof API → Redis Queue → Prover Worker → Postgres
+```mermaid
+graph LR
+    Client -->|HTTP| API[Proof API]
+    API -->|Enqueue| Redis[(Redis Queue)]
+    Redis -->|Consume| Worker[Prover Worker]
+    Worker -->|Persist| DB[(Postgres)]
+```
 
-
-
-The API is stateless. All state lives in Postgres and Redis.
+The API is **stateless**. All state lives in Postgres and Redis.
 
 ---
 
-## Endpoints
+## 🔌 Endpoints
 
-### Health
-GET /health
+### Health Check
 
+`GET /health`
 
 Returns service status.
 
 ---
 
 ### Create Proof Job
-POST /proofs
 
+`POST /proofs`
 
-Body:
+**Request Body:**
 
 ```json
 {
@@ -50,96 +55,93 @@ Body:
   "epoch": 1,
   "leaf": "0x..."
 }
+```
 
+**Response:**
 
-Response:
+```json
 {
   "id": "uuid"
 }
+```
 
+---
 
+### Get Proof Job
 
-Get Proof Job
-GET /proofs/:id
+`GET /proofs/:id`
 
-Returns:
+**Returns:**
+- status
+- request
+- publicInputs
+- proof (stub in MVP)
 
-status
+---
 
-request
+### List Jobs
 
-publicInputs
+`GET /proofs?limit=20`
 
-proof (stub in MVP)
+---
 
+### Metrics
 
-List Jobs
-
-GET /proofs?limit=20
-
-
-
-Metrics
-GET /metrics
-
+`GET /metrics`
 
 Prometheus-compatible metrics.
 
+---
 
-Environment Variables
-PORT=8080
-DATABASE_URL=postgres://...
-REDIS_URL=redis://...
-QUEUE_NAME=prove
-LOG_LEVEL=info
+## 🔧 Environment Variables
 
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `PORT` | API Port | `8080` |
+| `DATABASE_URL` | Postgres connection string | `postgres://...` |
+| `REDIS_URL` | Redis connection string | `redis://...` |
+| `QUEUE_NAME` | Job queue name | `prove` |
+| `LOG_LEVEL` | Logging verbosity | `info` |
 
+---
 
-Running Locally
+## 🏃 Running Locally
 
 From the repo root:
-docker compose -f infra/services/zk/docker-compose.zk.yml up -d --build
 
+```bash
+docker compose -f infra/services/zk/docker-compose.zk.yml up -d --build
+```
 
 API will be available at:
-http://localhost:3101
+`http://localhost:3101`
 
+---
 
+## 💡 Design Decisions
 
-Design Decisions
-Async proving
-
+### Async Proving
 Proof generation is asynchronous because proving can take seconds to minutes.
 
-Durable jobs
-
+### Durable Jobs
 Jobs are persisted before enqueueing to avoid loss.
 
-Queue-based architecture
-
+### Queue-based Architecture
 Redis queue decouples API latency from prover performance.
 
+---
 
-Security Model (MVP)
+## 🛡️ Security Model (MVP)
 
-The API is not a trust boundary.
+The API is **not a trust boundary**.
 
-Security relies on:
+**Security relies on:**
+- Circuit correctness
+- Verifier contract
+- Public input binding
 
-circuit correctness
-
-verifier contract
-
-public input binding
-
-Future improvements:
-
-authentication
-
-rate limiting
-
-job deduplication
-
-replay protection
-
-
+**Future improvements:**
+- [ ] Authentication
+- [ ] Rate limiting
+- [ ] Job deduplication
+- [ ] Replay protection

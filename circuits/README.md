@@ -1,172 +1,163 @@
-# ZK Circuits — Merkle Membership (Groth16)
+# 🛡️ ZK Circuits — Merkle Membership (Groth16)
+
+![Circom](https://img.shields.io/badge/Circom-2.x-blue)
+![SnarkJS](https://img.shields.io/badge/SnarkJS-Groth16-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 This directory contains the zero-knowledge circuit used by the ZK Proof Service.
 
-The circuit proves **Merkle allowlist membership** without revealing the Merkle path.
-
-It is implemented in **Circom** and uses **Poseidon hashing** and **Groth16 proofs (snarkjs)**.
+The circuit proves **Merkle allowlist membership** without revealing the Merkle path. It is implemented in **Circom** and uses **Poseidon hashing** and **Groth16 proofs (snarkjs)**.
 
 ---
 
-## Statement
+## 📝 Statement
 
 The circuit proves that:
 
-- a user belongs to a Merkle tree
-- the Merkle root is known publicly
-- the proof is bound to a specific user
+- A user belongs to a Merkle tree
+- The Merkle root is known publicly
+- The proof is bound to a specific user
 
-Leaf definition:
+### Leaf Definition
+
+```rust
 leaf = Poseidon(user, nonce)
+```
 
+### Inputs
 
-
-Public inputs:
-root
-user
-
-
-
-Private inputs:
-nonce
-pathElements[depth]
-pathIndices[depth
-
-
+| Type | Name | Description |
+| :--- | :--- | :--- |
+| **Public** | `root` | The Merkle root of the allowlist |
+| **Public** | `user` | The user's address |
+| **Private** | `nonce` | Secret value to prevent rainbow table attacks |
+| **Private** | `pathElements[depth]` | Merkle siblings |
+| **Private** | `pathIndices[depth]` | Path direction (0 or 1) |
 
 The circuit recomputes the Merkle root from the leaf and path and enforces:
-computedRoot == root
-
-
+```rust
+computedRoot === root
+```
 
 ---
 
-## Directory Structure
+## 📂 Directory Structure
 
+```graphql
 circuits/
 ├── circom/
-│ └── membership.circom
-│
+│   └── membership.circom   # Main circuit definition
 ├── scripts/
-│ ├── build.sh
-│ ├── prove.sh
-│ └── gen_sample_input.mjs
-│
+│   ├── build.sh            # Compile circuit
+│   ├── prove.sh            # Generate proof (dev)
+│   └── gen_sample_input.mjs
 ├── tests/
-│ └── membership.test.ts
-│
-└── build/ (generated artifacts)
-
-
+│   └── membership.test.ts  # Integration tests
+└── build/                  # Generated artifacts (wasm, zkey, r1cs)
+```
 
 ---
 
-## Requirements
+## 🛠️ Requirements
 
-Install:
+Install the following dependencies:
 
-- circom (2.x)
-- snarkjs
-- Node.js ≥ 20
+- **Circom (2.x)** - [Installation Guide](https://docs.circom.io/getting-started/installation/)
+- **SnarkJS**
+- **Node.js ≥ 20**
 
-Example installation:
+### Example Installation
 
-
+```bash
 npm i -g snarkjs
+```
 
-
-
-If circom is not installed, build it from source (Rust).
+> [!TIP]
+> If `circom` is not installed, you must build it from source (Rust).
 
 ---
 
-## Running Circuit Tests
+## 🧪 Running Circuit Tests
 
 From the `circuits` directory:
+
+```bash
 npm test
+```
 
-
-
-Tests cover:
-
-- valid Merkle path → constraints satisfied
-- invalid Merkle path → constraint failure
+**Tests cover:**
+- ✅ Valid Merkle path → constraints satisfied
+- ❌ Invalid Merkle path → constraint failure
 
 ---
 
-## Build Circuit
+## 🏗️ Build Circuit
 
 Compile the circuit and generate WASM + R1CS:
 
+```bash
 ./scripts/build.sh
+```
 
-
-
-This produces:
-build/membership.r1cs
-build/membership_js/membership.wasm
-build/membership.sym
-
-
+**This produces:**
+- `build/membership.r1cs`
+- `build/membership_js/membership.wasm`
+- `build/membership.sym`
 
 ---
 
-## Generate Proof (Off-chain)
+## 🔐 Generate Proof (Off-chain)
 
-Run:
+Run the proof generation script:
+
+```bash
 ./scripts/prove.sh
+```
 
+**This will:**
+1. Generate sample input
+2. Run Groth16 setup (dev parameters)
+3. Generate witness
+4. Generate proof
+5. Verify proof off-chain
 
-
-This will:
-
-1. generate sample input
-2. run Groth16 setup (dev parameters)
-3. generate witness
-4. generate proof
-5. verify proof off-chain
-
-Expected output:
+**Expected output:**
+```text
 snarkJS: OK!
 [prove] OK: proof verified off-chain
-
-
-
----
-
-## Development Notes
-
-### CommonJS witness generator
-
-Circom generates a CommonJS witness runner:
-generate_witness.js
-
-
-
-Since this project uses ESM (`"type": "module"`), the prove script
-automatically patches these files to `.cjs`.
-
-This is expected behavior for the MVP.
+```
 
 ---
 
-## Circuit Parameters
+## ℹ️ Development Notes
+
+### CommonJS Witness Generator
+
+Circom generates a CommonJS witness runner: `generate_witness.js`.
+
+> [!NOTE]
+> Since this project uses ESM (`"type": "module"`), the `prove` script automatically patches these files to `.cjs`. This is expected behavior for the MVP.
+
+---
+
+## ⚙️ Circuit Parameters
 
 Merkle depth is currently fixed:
+
+```javascript
 depth = 4
-
-
+```
 
 This keeps proof generation fast during development.
 
 ---
 
-## Future Improvements
+## 🔮 Future Improvements
 
-- configurable Merkle depth
-- Poseidon-based Merkle tree library
-- production trusted setup
-- proof caching
-- batched proving
-- recursive proofs
-- PLONK support
+- [ ] Configurable Merkle depth
+- [ ] Poseidon-based Merkle tree library
+- [ ] Production trusted setup
+- [ ] Proof caching
+- [ ] Batched proving
+- [ ] Recursive proofs
+- [ ] PLONK support
